@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="dogpa">
+  <xacro:property name="package_path" value="$(find uosm_robot_viewer)"/>
+  <xacro:arg name="camera_name"   default="zedm" />
+  <xacro:property name="camera_baseline" value="0.063" />
+  <xacro:property name="camera_height"   value="0.0265" />
+  <xacro:property name="optical_offset_x" value="0.0" />
+  <xacro:property name="M_PI"     value="3.1415926535897931" />
+
+  <!--Joint-->
+  <joint name="rotor_0" type="revolute">
+    <limit lower="-3.14000" upper="3.14000" effort="0.00000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 0.00000" xyz="0.17202 -0.17022 0.04861"/>
+    <parent link="base_link"/>
+    <child link="rotor_0_link"/>
+    <axis xyz="0.00000 0.00000 1.00000"/>
+  </joint>
+  <joint name="rotor_1" type="revolute">
+    <limit lower="-3.14000" upper="3.14000" effort="0.00000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 0.00000" xyz="-0.16623 0.16971 0.04861"/>
+    <parent link="base_link"/>
+    <child link="rotor_1_link"/>
+    <axis xyz="0.00000 0.00000 1.00000"/>
+  </joint>
+  <joint name="rotor_2" type="revolute">
+    <limit lower="-3.14000" upper="3.14000" effort="0.00000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 0.00000" xyz="0.17403 0.16804 0.04890"/>
+    <parent link="base_link"/>
+    <child link="rotor_2_link"/>
+    <axis xyz="0.00000 0.00000 1.00000"/>
+  </joint>
+  <joint name="rotor_3" type="revolute">
+    <limit lower="-3.14000" upper="3.14000" effort="0.00000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 0.00000" xyz="-0.16679 -0.16870 0.04890"/>
+    <parent link="base_link"/>
+    <child link="rotor_3_link"/>
+    <axis xyz="0.00000 0.00000 1.00000"/>
+  </joint>
+
+  <joint name="$(arg camera_name)_joint" type="fixed">
+    <origin rpy="0.00000 0.00000 0.00000" xyz="0.08650 0.0000 -0.04526"/>
+    <parent link="base_link"/>
+    <child link="$(arg camera_name)_camera_link"/>
+  </joint>
+  
+  <!-- <joint name="$(arg camera_name)_joint" type="fixed">
+    <origin rpy="0.00000 0.00000 0.00000" xyz="-0.08650 0.0000 0.04526"/>
+    <parent link="$(arg camera_name)_camera_link"/>
+    <child link="base_link"/>
+  </joint> -->
+  
+  <joint name="$(arg camera_name)_camera_center_joint" type="fixed">
+      <parent link="$(arg camera_name)_camera_link"/>
+      <child link="$(arg camera_name)_camera_center"/>
+      <origin xyz="0 0 ${camera_height/2}" rpy="0 0 0" />
+  </joint>
+  <joint name="$(arg camera_name)_left_camera_joint" type="fixed">
+      <parent link="$(arg camera_name)_camera_center"/>
+      <child link="$(arg camera_name)_left_camera_frame"/>
+      <origin xyz="${optical_offset_x} ${camera_baseline/2} 0" rpy="0 0 0" />
+  </joint>
+  <joint name="$(arg camera_name)_left_camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+      <parent link="$(arg camera_name)_left_camera_frame"/>
+      <child link="$(arg camera_name)_left_camera_optical_frame"/>
+  </joint>
+  <joint name="$(arg camera_name)_right_camera_joint" type="fixed">
+        <parent link="$(arg camera_name)_camera_center"/>
+        <child link="$(arg camera_name)_right_camera_frame"/>
+        <origin xyz="${optical_offset_x} -${camera_baseline/2} 0" rpy="0 0 0" />
+  </joint>
+  <joint name="$(arg camera_name)_right_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
+    <parent link="$(arg camera_name)_right_camera_frame"/>
+    <child link="$(arg camera_name)_right_camera_optical_frame"/>
+  </joint>
+
+  <!--Link-->
+  <link name="base_link">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00009 0.00035 0.00884"/>
+      <material name="dogpa"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/body.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00001 -0.00000 -0.00001"/>
+      <geometry>
+        <box size="0.38959 0.38884 0.14766"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <inertia ixx="0.01036" ixy="0.00001" ixz="-0.00031" iyy="0.01044" iyz="-0.00002" izz="0.01785"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00331 0.00035 0.00980"/>
+      <mass value="1.58000"/>
+    </inertial>
+  </link>
+  <link name="rotor_0_link">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 -0.00000 0.00000"/>
+      <material name="prop"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/prop1.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="-0.00000 -0.00000 -0.00000"/>
+      <geometry>
+        <cylinder length="0.006" radius="0.127"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <inertia ixx="0.00009" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00000" izz="0.00018"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="-0.00001 -0.00006 -0.00033"/>
+      <mass value="0.01100"/>
+    </inertial>
+  </link>
+  <link name="rotor_1_link">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 -0.00000 0.00000"/>
+      <material name="prop"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/prop2.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.00000 0.00000 -0.00000" xyz="0.00000 0.00000 0.00000"/>
+      <geometry>
+        <cylinder length="0.006" radius="0.127"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <inertia ixx="0.00009" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00000" izz="0.00018"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="-0.00003 -0.00005 -0.00035"/>
+      <mass value="0.01100"/>
+    </inertial>
+  </link>
+  <link name="rotor_2_link">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+      <material name="prop"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/prop3.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+      <geometry>
+        <cylinder length="0.006" radius="0.127"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <inertia ixx="0.00009" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00000" izz="0.00018"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00014 0.00013 0.00035"/>
+      <mass value="0.01100"/>
+    </inertial>
+  </link>
+  <link name="rotor_3_link">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+      <material name="prop"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/prop4.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.00000 0.00000 -0.00000" xyz="-0.00000 -0.00000 -0.00000"/>
+      <geometry>
+        <cylinder length="0.006" radius="0.127"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <inertia ixx="0.00009" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00000" izz="0.00018"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00004 -0.00061 0.00036"/>
+      <mass value="0.01100"/>
+    </inertial>
+  </link>
+
+  <!-- Sensor -->
+  <link name="$(arg camera_name)_camera_link" />
+  <link name="$(arg camera_name)_camera_center">
+    <visual>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00600 0.00000"/>
+      <material name="zedm"/>
+      <geometry>
+        <mesh filename="file://${package_path}/urdf/dogpa_meshes/dae/zedm.dae" scale="1.00000 1.00000 1.00000"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="$(arg camera_name)_left_camera_frame" />
+  <link name="$(arg camera_name)_left_camera_optical_frame" />
+  <link name="$(arg camera_name)_right_camera_frame" />
+  <link name="$(arg camera_name)_right_camera_optical_frame"/>
+
+  <material name="prop">
+    <color rgba="0.00000 0.00000 0.00000 1.00000"/>
+  </material>
+  <material name="dogpa">
+    <texture filename="file://${package_path}/urdf/dogpa_meshes/dae/dogpa_albedo.png"/>
+    <color rgba="0.80000 0.80000 0.80000 1.00000"/>
+  </material>
+  <material name="zedm">
+    <color rgba="0.00000 0.00000 0.00000 1.00000"/>
+  </material>
+</robot>
