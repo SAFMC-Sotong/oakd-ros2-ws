@@ -129,6 +129,6 @@ ros2 launch mavros_bridge oakdl_vins_mavros_bridge.launch.py
 ![TF Tree](media/tf_tree.png)
 
 ### RViz Visualization
-![RViz Visualization](rviz.gif)
+![RViz Visualization](media/rviz.gif)
 ---
 
