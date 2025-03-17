@@ -4,7 +4,7 @@ Interface with with PX4 mavros
 
 ##
 ```bash
-sudo apt install ros-humble-mavros
+sudo apt install ros-humble-mavros ros-humble-mavros-extras
 sudo ./ros2/src/mavros_bridge/install_geolib.sh
 rosdep install --from-paths src/mavros_bridge --ignore-src -r -y
 colcon build --packages-select mavros_bridge
