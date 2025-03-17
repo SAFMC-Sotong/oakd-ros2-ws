@@ -58,6 +58,11 @@ namespace uosm
             convUpdateROSBaseTimeOnToRosMsg = get_parameter("convUpdateROSBaseTimeOnToRosMsg").as_bool();
             convReverseSocketOrder = get_parameter("convReverseSocketOrder").as_bool();
 
+            declare_parameter("ffmpegBitrate", 5000);
+            declare_parameter("ffmpegEncoder", "libx264");
+            ffmpegBitrate = get_parameter("ffmpegBitrate").as_int();
+            ffmpegEncoder = get_parameter("ffmpegEncoder").as_string();
+
             initPipeline();
 
             initPubSub();
@@ -174,22 +179,23 @@ namespace uosm
                 colorCam->setVideoSize(3840, 2160);
             }
             colorCam->setPreviewSize(previewWidth, previewHeight);
+            colorCam->setVideoSize(previewWidth, previewHeight);
             colorCam->setInterleaved(false);
             colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
             colorCam->setFps(colorFPS);
             colorCam->setImageOrientation(dai::CameraImageOrientation::ROTATE_180_DEG);
 
-            // auto enc = pipeline->create<dai::node::VideoEncoder>();
-            // enc->setQuality(encQuality);
-            // enc->setProfile(encProfile);
-            // if(encProfile != dai::VideoEncoderProperties::Profile::MJPEG) {
-            //     enc->setBitrate(encBitRate);
-            //     enc->setKeyframeFrequency(encFrameFeq);
-            // }
+            auto videoEnc = pipeline->create<dai::node::VideoEncoder>();
+            videoEnc->setDefaultProfilePreset(float(colorFPS), dai::VideoEncoderProperties::Profile::MJPEG);
+            // videoEnc->setDefaultProfilePreset(colorFPS, dai::VideoEncoderProperties::Profile::H265_MAIN);
+            // videoEnc->setBitrate(ffmpegBitrate);
+            // videoEnc->setRateControlMode(dai::VideoEncoderProperties::RateControlMode::CBR);
 
             auto xlinkPreviewOut = pipeline->create<dai::node::XLinkOut>();
             xlinkPreviewOut->setStreamName("preview");
-            colorCam->preview.link(xlinkPreviewOut->input);
+            // colorCam->preview.link(xlinkPreviewOut->input);
+            colorCam->video.link(videoEnc->input);
+            videoEnc->bitstream.link(xlinkPreviewOut->input);
         }
 
         void OakCamera::initPubSub()
@@ -198,8 +204,13 @@ namespace uosm
             rclcpp::PublisherOptions pubOptions;
             pubOptions.qos_overriding_options = rclcpp::QosOverridingOptions::with_default_policies();
 
-            // rgbFFmpegPub = create_publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(RGB_TOPIC, rclcpp::QoS(10), pubOptions);
-            rgbImgPub = create_publisher<sensor_msgs::msg::Image>(RGB_TOPIC, rclcpp::QoS(10), pubOptions);
+            // auto ffmpegQos = rclcpp::QoS(10);
+            // ffmpegQos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+            // ffmpegQos.durability(rclcpp::DurabilityPolicy::Volatile);
+            // ffmpegQos.history(rclcpp::HistoryPolicy::KeepLast);
+            // rgbFFmpegPub = create_publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>(RGB_TOPIC, ffmpegQos, pubOptions);
+            // rgbImgPub = create_publisher<sensor_msgs::msg::Image>(RGB_TOPIC, rclcpp::QoS(10), pubOptions);
+            rgbComprPub = create_publisher<sensor_msgs::msg::CompressedImage>(RGB_TOPIC, rclcpp::QoS(10), pubOptions);
 
             if (useRaw)
             {
@@ -240,7 +251,7 @@ namespace uosm
                 rgbConverter->reverseStereoSocketOrder();
             }
 
-            // rgbConverter.setFFMPEGEncoding(true);
+            // rgbConverter->setFFMPEGEncoding(ffmpegEncoder);
 
             auto leftCameraInfo = leftConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_B, monoWidth, monoHeight);
             auto rightCameraInfo = rightConverter->calibrationToCameraInfo(calibrationHandler, dai::CameraBoardSocket::CAM_C, monoWidth, monoHeight);
@@ -281,17 +292,13 @@ namespace uosm
                         rightInfoPub->publish(rightCameraInfo);
                     }
 
-                    // Process RGB messages
-                    /*
-                    auto rgbMsg = rgbQueue->tryGet<dai::ImgFrame>();
-                    if (rgbMsg)
-                    {
-                        auto rgbRawMsg = rgbConverter.toRosMsgRawPtr(rgbMsg, previewCameraInfo);
-                        previewCameraInfo.header = rgbRawMsg.header;
-                        rgbImgPub->publish(rgbRawMsg);
+                    auto rgbData = rgbQueue->tryGet<dai::ImgFrame>();
+                    if(rgbData) {
+                        auto rawMsg = rgbConverter->toRosCompressedMsg(rgbData);
+                        previewCameraInfo.header = rawMsg.header;
+                        rgbComprPub->publish(rawMsg);
                         rgbInfoPub->publish(previewCameraInfo);
                     }
-                    */
 
                     // Short sleep to prevent CPU hogging
                     rclcpp::sleep_for(std::chrono::milliseconds(5));

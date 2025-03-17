@@ -19,15 +19,17 @@ def generate_launch_description():
                 'useRaw': False,
                 'monoResolution': '400p',
                 'colorResolution': '1080p',
-                'previewWidth': 300,
-                'previewHeight': 300,
+                'previewWidth': 640,
+                'previewHeight': 400,
                 'colorFPS': 15,
                 'lrFPS': 60,
                 'syncThreshold': 10,
                 'convInterleaved': False,
                 'convGetBaseDeviceTimestamp': False,
                 'convUpdateROSBaseTimeOnToRosMsg': True,
-                'convReverseSocketOrder': True
+                'convReverseSocketOrder': True,
+                'ffmpegEncoder': "libx265", # h264_nvmpi, libx265
+                "ffmpegBitRate": 5000
             }],
         extra_arguments=[{'use_intra_process_comms': True}]
     )

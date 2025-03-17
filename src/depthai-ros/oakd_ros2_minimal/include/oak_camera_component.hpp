@@ -15,6 +15,7 @@
 #include <image_transport/camera_publisher.hpp>
 #include <image_transport/image_transport.hpp>
 #include <image_transport/publisher.hpp>
+#include <ffmpeg_image_transport_msgs/msg/ffmpeg_packet.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -61,6 +62,9 @@ namespace uosm
             bool useRaw;
             bool convInterleaved, convGetBaseDeviceTimestamp, convUpdateROSBaseTimeOnToRosMsg, convReverseSocketOrder;
 
+            int ffmpegBitrate;
+            std::string ffmpegEncoder;
+
             std::shared_ptr<dai::Pipeline> pipeline;
             std::shared_ptr<dai::Device> device;
             std::shared_ptr<dai::DataOutputQueue> groupQueue;
@@ -69,6 +73,7 @@ namespace uosm
             rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr rgbImgPub, leftImgPub, rightImgPub;
             rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr rgbInfoPub, leftInfoPub, rightInfoPub;
             rclcpp::Publisher<ffmpeg_image_transport_msgs::msg::FFMPEGPacket>::SharedPtr rgbFFmpegPub;
+            rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr rgbComprPub;
 
             rclcpp::TimerBase::SharedPtr mInitTimer;
 
